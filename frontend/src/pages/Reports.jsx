@@ -1,0 +1,2 @@
+const Reports = () => <h2>Reports</h2>;
+export default Reports;
