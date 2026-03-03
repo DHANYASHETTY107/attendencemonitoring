@@ -136,7 +136,7 @@ function App() {
         {/* User Attendance */}
         <Route path="attendance" element={<AttendanceLayout />}>
           <Route index element={<Navigate to="month" replace />} />
-          <Route path="day" element={<Day />} />
+          <Route path="day/:date" element={<Day />} />
           <Route path="month" element={<Month />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>

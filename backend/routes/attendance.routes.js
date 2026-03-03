@@ -19,44 +19,131 @@ GET ATTENDANCE BY EMPLOYEE (DASHBOARD)
 ✔ No fake 12h, no frontend math
 =======================================================
 */
-router.get("/employee/:empId", auth, async (req, res) => {
+// =====================================
+// GET SINGLE DAY ATTENDANCE (DAY PAGE)
+// =====================================
+// =====================================
+// GET SINGLE DAY ATTENDANCE (USING USER ID)
+// =====================================
+// =====================================
+// DASHBOARD ATTENDANCE (EMPLOYEE BASED)
+// =====================================
+router.get("/employee/:employeeId", auth, async (req, res) => {
   try {
-    const { empId } = req.params;
+    const { employeeId } = req.params;
 
     const [rows] = await db.query(
       `
       SELECT
         DATE(date) AS date,
-        MIN(in_time) AS in_time,
-        MAX(out_time) AS out_time,
-        SUM(total_work_minutes) AS total_minutes
+        in_time,
+        out_time,
+        total_work_minutes,
+        idle_minutes
       FROM attendance
       WHERE employee_id = ?
-      GROUP BY DATE(date)
-      ORDER BY DATE(date) ASC
+      ORDER BY date
       `,
-      [empId]
+      [employeeId]
     );
 
-    const result = rows.map((r) => {
-      const total = Number(r.total_minutes || 0);
+    const result = rows.map((r) => ({
+      date: r.date,
+      in_time: r.in_time,
+      out_time: r.out_time,
 
-      return {
-        date: r.date,                // YYYY-MM-DD
-        in_time: r.in_time || null,  // may be null
-        out_time: r.out_time || null,
-        hours: Math.floor(total / 60),
-        minutes: total % 60,
-      };
-    });
+      hours: Math.floor((r.total_work_minutes || 0) / 60),
+      minutes: (r.total_work_minutes || 0) % 60,
+
+      idle_hours: Math.floor((r.idle_minutes || 0) / 60),
+      idle_minutes: (r.idle_minutes || 0) % 60,
+    }));
 
     res.json(result);
   } catch (err) {
-    console.error("Fetch attendance error:", err);
-    res.status(500).json({ error: "Failed to fetch attendance" });
+    console.error("Dashboard fetch error:", err);
+    res.status(500).json({ error: "Dashboard fetch failed" });
   }
 });
+// ===============================
+// DAY PAGE (USER → EMPLOYEE)
+// ===============================
+router.get("/user/:userId/day/:date", auth, async (req, res) => {
+  try {
+    const { userId, date } = req.params;
 
+    const [rows] = await db.query(
+      `
+      SELECT
+        date,
+        in_time,
+        out_time,
+        total_work_minutes,
+        idle_minutes
+      FROM attendance
+      WHERE employee_id = ?
+        AND DATE(date) = ?
+      `,
+      [userId, date]
+    );
+
+    if (rows.length === 0) {
+      return res.json(null);
+    }
+
+    const r = rows[0];
+
+    res.json({
+      date: r.date,
+      in_time: r.in_time,
+      out_time: r.out_time,
+      work_minutes: r.total_work_minutes || 0,
+      idle_minutes: r.idle_minutes || 0,
+    });
+
+  } catch (err) {
+    console.error("Day fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch day attendance" });
+  }
+});
+// =======================================
+// GET MONTH ATTENDANCE FOR CALENDAR
+// =======================================
+router.get("/user/:userId/month/:year/:month", auth, async (req, res) => {
+  try {
+    const { userId, year, month } = req.params;
+
+    // STEP 1: Find employee_id from employees table
+    const [empRows] = await db.query(
+      "SELECT id FROM employees WHERE id = ?",
+      [userId]
+    );
+
+    if (empRows.length === 0) {
+      return res.json([]);
+    }
+
+    const employeeId = empRows[0].id;
+
+    // STEP 2: Fetch attendance
+    const [rows] = await db.query(
+      `
+      SELECT DATE(date) as date, total_work_minutes
+      FROM attendance
+      WHERE employee_id = ?
+        AND YEAR(date) = ?
+        AND MONTH(date) = ?
+      `,
+      [employeeId, year, month]
+    );
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error("Month calendar fetch error:", err);
+    res.status(500).json({ error: "Failed to fetch month attendance" });
+  }
+});
 /*
 =======================================================
 EXCEL UPLOAD
@@ -182,3 +269,4 @@ router.post(
 );
 
 module.exports = router;
+

@@ -10,7 +10,6 @@ const UserDashboard = () => {
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Default month/year
   const [currentMonth, setCurrentMonth] = useState(12);
   const [currentYear, setCurrentYear] = useState(2025);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -22,12 +21,21 @@ const UserDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // 1️⃣ Get employee using userId
         const empRes = await API.get(`/employees/${userId}`);
-        setEmployee(empRes.data);
+        const emp = empRes.data;
+        setEmployee(emp);
 
-        const attRes = await API.get(`/attendance/employee/${userId}`);
+        if (!emp?.id) {
+          setAttendance([]);
+          return;
+        }
 
-        // ✅ NORMALIZE DATE FORMAT ONCE
+        // 2️⃣ Use employee.id for attendance
+        const attRes = await API.get(
+          `/attendance/employee/${emp.id}`
+        );
+
         const normalized = attRes.data.map((r) => ({
           ...r,
           date: r.date.slice(0, 10), // YYYY-MM-DD
@@ -45,7 +53,7 @@ const UserDashboard = () => {
   }, [userId]);
 
   // =========================
-  // BUILD DATE → RECORD MAP
+  // DATE → RECORD MAP
   // =========================
   const attendanceMap = useMemo(() => {
     const map = {};
@@ -58,7 +66,7 @@ const UserDashboard = () => {
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
 
   // =========================
-  // SELECTED DAY RECORD
+  // SELECTED DAY
   // =========================
   const selectedKey = selectedDate
     ? `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(
@@ -101,7 +109,9 @@ const UserDashboard = () => {
     <div className="space-y-6">
       {/* ================= HEADER ================= */}
       <div className="bg-blue-600 text-white p-6 rounded-xl">
-        <h1 className="text-2xl font-bold">{employee?.name}</h1>
+        <h1 className="text-2xl font-bold">
+          {employee?.name || "Employee"}
+        </h1>
 
         <div className="flex justify-between items-center mt-2">
           <button onClick={prevMonth} className="text-xl">
