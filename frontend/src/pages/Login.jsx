@@ -6,9 +6,31 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   const login = async () => {
-    const res = await api.post("/auth/login", { email, password });
-    localStorage.setItem("token", res.data.token);
-    window.location.href = "/";
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
+
+    try {
+      const res = await api.post("/auth/login", { email, password });
+      localStorage.setItem("token", res.data.token);
+      window.location.href = "/";
+    } catch (err) {
+      // axios throws for status codes outside 2xx
+      if (err.response) {
+        // server responded with status code
+        if (err.response.status === 401) {
+          alert("Invalid credentials, please try again.");
+        } else if (err.response.status === 404) {
+          alert("User not found. Please register first.");
+        } else {
+          alert(`Login failed: ${err.response.data.message || err.response.status}`);
+        }
+      } else {
+        alert("Login request failed. Please check your network or try again later.");
+      }
+      console.error("Login error:", err);
+    }
   };
 
   return (

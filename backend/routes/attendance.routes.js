@@ -144,6 +144,72 @@ router.get("/user/:userId/month/:year/:month", auth, async (req, res) => {
     res.status(500).json({ error: "Failed to fetch month attendance" });
   }
 });
+router.get("/report/:userId/:year/:month", auth, async (req, res) => {
+  try {
+    const { userId, year, month } = req.params;
+
+    const [rows] = await db.query(
+      `
+      SELECT 
+        DATE(date) AS full_date,
+        total_work_minutes
+      FROM attendance
+      WHERE employee_id = ?
+      AND YEAR(date) = ?
+      AND MONTH(date) = ?
+      ORDER BY date ASC
+      `,
+      [userId, year, month]
+    );
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    const formatted = [];
+
+    for (let i = 1; i <= daysInMonth; i++) {
+
+      const currentDate = new Date(year, month - 1, i);
+      const dayStr = i.toString().padStart(2, "0");
+
+      const found = rows.find(
+        (r) => new Date(r.full_date).getDate() === i
+      );
+
+      if (currentDate.getDay() === 0) {
+        formatted.push({
+          day: dayStr,
+          hours: 0,
+          display: "Sunday",
+        });
+        continue;
+      }
+
+      if (found) {
+        const totalMinutes = found.total_work_minutes || 0;
+        const h = Math.floor(totalMinutes / 60);
+        const m = totalMinutes % 60;
+
+        formatted.push({
+          day: dayStr,
+          hours: totalMinutes / 60,
+          display: `${h}h ${m}m`,
+        });
+      } else {
+        formatted.push({
+          day: dayStr,
+          hours: 0,
+          display: "Absent",
+        });
+      }
+    }
+
+    res.json(formatted);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Report fetch failed" });
+  }
+});
 /*
 =======================================================
 EXCEL UPLOAD
