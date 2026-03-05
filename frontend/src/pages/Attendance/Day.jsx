@@ -116,11 +116,23 @@ const Day = () => {
 
   // Determine status: Sunday, Holiday, Present or Absent
   const weekday = new Date(displayedDate).getDay();
-  let status = "Absent";
-  if (weekday === 0) status = "Sunday";
-  else if (displayedDate === "2025-12-25") status = "Holiday";
-  else if (dayData && (dayData.work_minutes || 0) > 0) status = "Present";
 
+// Holiday list
+const holidays = {
+  "2025-12-25": "Holiday"
+};
+
+let status = "Absent";
+
+if (weekday === 0) {
+  status = "Sunday";
+} 
+else if (holidays[displayedDate]) {
+  status = holidays[displayedDate];
+} 
+else if (dayData && (dayData.work_minutes || 0) > 0) {
+  status = "Present";
+}
   const formatMinutes = (m) =>
     `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(
       2,
@@ -128,10 +140,10 @@ const Day = () => {
     )}`;
 
   // Values to show when dayData is missing
-  const workMinutes = dayData ? dayData.work_minutes || 0 : 0;
-  const idleMinutes = dayData ? dayData.idle_minutes || 0 : 0;
-  const inTime = dayData?.in_time ? dayData.in_time.slice(0, 5) : "--";
-  const outTime = dayData?.out_time ? dayData.out_time.slice(0, 5) : "--";
+const workMinutes = status === "Present" ? dayData.work_minutes || 0 : 0;
+const idleMinutes = status === "Present" ? dayData.idle_minutes || 0 : 0;
+const inTime = status === "Present" ? dayData.in_time.slice(0, 5) : "--";
+const outTime = status === "Present" ? dayData.out_time.slice(0, 5) : "--";
 
   const badgeClasses =
     status === "Present"
