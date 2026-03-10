@@ -150,8 +150,8 @@ router.get("/report/:userId", auth, async (req, res) => {
     const { userId } = req.params;
 
     const today = new Date();
-    const year = 2025;
-const month = 12;
+const year = 2025;
+const month = req.query.month || 12;
 
 const [rows] = await db.query(
   `

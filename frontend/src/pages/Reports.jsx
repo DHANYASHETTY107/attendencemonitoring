@@ -20,11 +20,14 @@ const Reports = () => {
   const [totalTime, setTotalTime] = useState("0h 0m");
   const [startIndex, setStartIndex] = useState(0);
 
+  // NEW
+  const [month, setMonth] = useState(12);
+
   const ITEMS_PER_PAGE = 15;
 
   useEffect(() => {
     fetchReport();
-  }, [userId]);
+  }, [userId, month]);
 
   useEffect(() => {
     const slice = data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -33,7 +36,8 @@ const Reports = () => {
 
   const fetchReport = async () => {
     try {
-      const res = await API.get(`/attendance/report/${userId}`);
+      const res = await API.get(`/attendance/report/${userId}?month=${month}`);
+
       const reportData = res.data;
 
       let totalMinutes = 0;
@@ -49,6 +53,7 @@ const Reports = () => {
 
       setTotalTime(`${h}h ${m}m`);
       setData(reportData);
+      setStartIndex(0);
     } catch (err) {
       console.error("Report error:", err);
     }
@@ -71,8 +76,27 @@ const Reports = () => {
 
       {/* Header */}
       <div className="bg-blue-600 text-white p-4 rounded-md font-bold text-xl uppercase flex justify-between">
-        <span>ATTENDANCE REPORT</span>
+        <span>
+          ATTENDANCE REPORT ({month === 11 ? "November" : "December"})
+        </span>
         <span>{totalTime}</span>
+      </div>
+
+      {/* Month Switch */}
+      <div className="flex justify-center space-x-4">
+        <button
+          onClick={() => setMonth(11)}
+          className={`px-4 py-1 rounded ${month === 11 ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+        >
+          November
+        </button>
+
+        <button
+          onClick={() => setMonth(12)}
+          className={`px-4 py-1 rounded ${month === 12 ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+        >
+          December
+        </button>
       </div>
 
       {/* Pagination */}
