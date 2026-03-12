@@ -12,7 +12,7 @@ import Calendar from "./pages/Attendance/Calender"; // Note: ensure spelling mat
 import Reports from "./pages/Reports";
 import UserDashboard from "./pages/UserDashboard";
 import UrlUsage from "./pages/UrlUsage";
-
+import Settings from "./pages/Settings";
 // Layouts
 import MainLayout from "./layout/MainLayout";
 import MastersLayout from "./pages/Masters/MastersLayout";
@@ -72,6 +72,9 @@ function App() {
         <Route path="departments" element={<Departments />} />
         <Route path="sections" element={<Sections />} />
       </Route>
+
+      {/* 4. Settings */}
+     <Route path="user/:userId/settings" element={<Settings />} />
 
     </Route>
 

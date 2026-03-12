@@ -221,6 +221,90 @@ const [rows] = await db.query(
 
   }
 });
+// ======================================
+// MONTH SUMMARY (NOV & DEC) EXCLUDING
+// SUNDAYS AND HOLIDAYS
+// ======================================
+router.get("/month-summary", auth, async (req, res) => {
+  try {
+
+    const holidays = {
+      "11": ["2025-11-01"],  // Nov 1
+      "12": ["2025-12-25"]   // Dec 25
+    };
+
+    const [employees] = await db.query(`
+      SELECT id, name
+      FROM employees
+      ORDER BY name
+    `);
+
+    const result = [];
+
+    for (const emp of employees) {
+
+      const [rows] = await db.query(`
+        SELECT DATE(date) AS date, total_work_minutes
+        FROM attendance
+        WHERE employee_id = ?
+        AND YEAR(date) = 2025
+        AND MONTH(date) IN (11,12)
+      `,[emp.id]);
+
+      let novPresent = 0;
+      let decPresent = 0;
+
+      rows.forEach(r => {
+        const month = new Date(r.date).getMonth() + 1;
+
+        if (r.total_work_minutes > 0) {
+          if (month === 11) novPresent++;
+          if (month === 12) decPresent++;
+        }
+      });
+
+      // calculate working days
+      const countWorkingDays = (year, month, holidayList) => {
+
+        const days = new Date(year, month, 0).getDate();
+        let working = 0;
+
+        for (let i = 1; i <= days; i++) {
+
+          const date = new Date(year, month - 1, i);
+          const dateStr = date.toISOString().split("T")[0];
+
+          if (date.getDay() === 0) continue; // skip Sunday
+          if (holidayList.includes(dateStr)) continue; // skip holiday
+
+          working++;
+        }
+
+        return working;
+      };
+
+      const novWorking = countWorkingDays(2025, 11, holidays["11"]);
+      const decWorking = countWorkingDays(2025, 12, holidays["12"]);
+
+      result.push({
+        name: emp.name,
+
+        nov_present: novPresent,
+        nov_absent: novWorking - novPresent,
+
+        dec_present: decPresent,
+        dec_absent: decWorking - decPresent
+      });
+
+    }
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Month summary error:", err);
+    res.status(500).json({ error: "Month summary failed" });
+  }
+});
 /*
 =======================================================
 EXCEL UPLOAD

@@ -1,5 +1,6 @@
 
 
+
 // const express = require("express");
 // const cors = require("cors");
 // require("dotenv").config();
@@ -23,12 +24,12 @@
 //   console.log(`Server running on http://localhost:${PORT}`);
 // });
 
-
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
+
 app.get("/test", (req, res) => {
   res.send("Backend working");
 });
@@ -42,8 +43,11 @@ app.use("/api/sections", require("./routes/section.routes"));
 app.use("/api/attendance", require("./routes/attendance.routes"));
 app.use("/api/employees", require("./routes/employee.routes"));
 
+/* 🔹 ADD THIS */
+app.use("/api/users", require("./routes/users.routes"));
+
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
