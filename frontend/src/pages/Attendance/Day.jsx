@@ -140,10 +140,18 @@ else if (dayData && (dayData.work_minutes || 0) > 0) {
     )}`;
 
   // Values to show when dayData is missing
-const workMinutes = status === "Present" ? dayData.work_minutes || 0 : 0;
-const idleMinutes = status === "Present" ? dayData.idle_minutes || 0 : 0;
-const inTime = status === "Present" ? dayData.in_time.slice(0, 5) : "--";
-const outTime = status === "Present" ? dayData.out_time.slice(0, 5) : "--";
+const workMinutes = status === "Present" ? dayData?.work_minutes || 0 : 0;
+const idleMinutes = status === "Present" ? dayData?.idle_minutes || 0 : 0;
+
+const inTime =
+  status === "Present" && dayData?.in_time
+    ? dayData.in_time.slice(0, 5)
+    : "--";
+
+const outTime =
+  status === "Present" && dayData?.out_time
+    ? dayData.out_time.slice(0, 5)
+    : "--";
 
   const badgeClasses =
     status === "Present"
