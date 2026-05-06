@@ -1,43 +1,59 @@
-// const express = require("express");
-// const router = express.Router();
-// const db = require("../config/db"); // adjust if your db path is different
-
-// // ✅ Get single user by ID
-// router.get("/:id", async (req, res) => {
-//   const { id } = req.params;
-
-//   try {
-//     const [rows] = await db.query(
-//       "SELECT id, name FROM users WHERE id = ?",
-//       [id]
-//     );
-
-//     if (rows.length === 0) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     res.json(rows[0]);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
-// module.exports = router;
 const express = require("express");
-const router = express.Router();
+const bcrypt = require("bcryptjs");
 const db = require("../config/db");
-const bcrypt = require("bcryptjs"); // added for password hashing
+const auth = require("../middleware/auth.middleware");
 
+const router = express.Router();
 
-// ✅ Get single user by ID (OLD CODE — unchanged)
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
+router.post("/change-password", auth, async (req, res) => {
+  try {
+    const requestedUserId = Number(req.body.userId || req.user?.id);
+    const password = String(req.body.password || req.body.newPassword || "");
 
+    if (!requestedUserId || !password) {
+      return res.status(400).json({ message: "User and password are required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    if (req.user.role !== "admin" && Number(req.user.id) !== requestedUserId) {
+      return res.status(403).json({ message: "You can only change your own password" });
+    }
+
+    const [users] = await db.query("SELECT id FROM users WHERE id = ?", [
+      requestedUserId
+    ]);
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await db.query(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, requestedUserId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(500).json({ message: "Password was not updated" });
+    }
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Password update error:", err);
+    res.status(500).json({
+      message: "Password update failed. Check MySQL and the users table schema."
+    });
+  }
+});
+
+router.get("/:id", auth, async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT id, name FROM users WHERE id = ?",
-      [id]
+      "SELECT id, name, email, role, emp_code FROM users WHERE id = ?",
+      [req.params.id]
     );
 
     if (rows.length === 0) {
@@ -45,40 +61,10 @@ router.get("/:id", async (req, res) => {
     }
 
     res.json(rows[0]);
-
   } catch (err) {
-    console.error(err);
+    console.error("Fetch user error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
-// ✅ NEW: Change Password
-router.post("/change-password", async (req, res) => {
-  const { userId, password } = req.body;
-
-  try {
-
-    if (!userId || !password) {
-      return res.status(400).json({ message: "Missing data" });
-    }
-
-    const hashedPassword = bcrypt.hashSync(password, 10);
-
-    await db.query(
-      "UPDATE users SET password = ? WHERE id = ?",
-      [hashedPassword, userId]
-    );
-
-    res.json({
-      message: "Password updated successfully"
-    });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Password update failed" });
-  }
-});
-
 
 module.exports = router;

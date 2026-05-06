@@ -1,186 +1,4 @@
-
-// import React, { useEffect, useState, useMemo } from "react";
-// import { useParams } from "react-router-dom";
-// import API from "../services/api";
-
-// const UserDashboard = () => {
-//   const { userId } = useParams();
-
-//   const [employee, setEmployee] = useState(null);
-//   const [attendance, setAttendance] = useState([]);
-//   const [loading, setLoading] = useState(true);
-
-//   const [currentMonth, setCurrentMonth] = useState(12);
-//   const [currentYear, setCurrentYear] = useState(2025);
-//   const [selectedDate, setSelectedDate] = useState(null);
-
-//   // =========================
-//   // FETCH DATA
-//   // =========================
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       setLoading(true);
-//       try {
-//         // 1️⃣ Get employee using userId
-//         const empRes = await API.get(`/employees/${userId}`);
-//         const emp = empRes.data;
-//         setEmployee(emp);
-
-//         if (!emp?.id) {
-//           setAttendance([]);
-//           return;
-//         }
-
-//         // 2️⃣ Use employee.id for attendance
-//         const attRes = await API.get(
-//           `/attendance/employee/${emp.id}`
-//         );
-
-//         const normalized = attRes.data.map((r) => ({
-//           ...r,
-//           date: r.date.slice(0, 10), // YYYY-MM-DD
-//         }));
-
-//         setAttendance(normalized);
-//       } catch (err) {
-//         console.error("Dashboard load error:", err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [userId]);
-
-//   // =========================
-//   // DATE → RECORD MAP
-//   // =========================
-//   const attendanceMap = useMemo(() => {
-//     const map = {};
-//     attendance.forEach((r) => {
-//       map[r.date] = r;
-//     });
-//     return map;
-//   }, [attendance]);
-
-//   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-
-//   // =========================
-//   // SELECTED DAY
-//   // =========================
-//   const selectedKey = selectedDate
-//     ? `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(
-//         selectedDate
-//       ).padStart(2, "0")}`
-//     : null;
-
-//   const selectedRecord = selectedKey
-//     ? attendanceMap[selectedKey]
-//     : null;
-
-//   // =========================
-//   // MONTH NAVIGATION
-//   // =========================
-//   const nextMonth = () => {
-//     setSelectedDate(null);
-//     if (currentMonth === 12) {
-//       setCurrentMonth(1);
-//       setCurrentYear((y) => y + 1);
-//     } else {
-//       setCurrentMonth((m) => m + 1);
-//     }
-//   };
-
-//   const prevMonth = () => {
-//     setSelectedDate(null);
-//     if (currentMonth === 1) {
-//       setCurrentMonth(12);
-//       setCurrentYear((y) => y - 1);
-//     } else {
-//       setCurrentMonth((m) => m - 1);
-//     }
-//   };
-
-//   if (loading) {
-//     return <div className="p-8 text-gray-500">Loading dashboard…</div>;
-//   }
-
-//   return (
-//     <div className="space-y-6">
-//       {/* ================= HEADER ================= */}
-//       <div className="bg-blue-600 text-white p-6 rounded-xl">
-//         <h1 className="text-2xl font-bold">
-//           {employee?.name || "Employee"}
-//         </h1>
-
-//         <div className="flex justify-between items-center mt-2">
-//           <button onClick={prevMonth} className="text-xl">
-//             &lt;
-//           </button>
-//           <span className="font-semibold">
-//             {new Date(currentYear, currentMonth - 1).toLocaleString("default", {
-//               month: "long",
-//             })}{" "}
-//             {currentYear}
-//           </span>
-//           <button onClick={nextMonth} className="text-xl">
-//             &gt;
-//           </button>
-//         </div>
-
-//         {/* ================= CALENDAR ================= */}
-//         <div className="flex gap-2 overflow-x-auto mt-4 pb-2">
-//           {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-//             const key = `${currentYear}-${String(currentMonth).padStart(
-//               2,
-//               "0"
-//             )}-${String(day).padStart(2, "0")}`;
-
-//             const record = attendanceMap[key];
-
-//             return (
-//               <div
-//                 key={day}
-//                 onClick={() => setSelectedDate(day)}
-//                 className={`min-w-[60px] p-3 text-center rounded-lg cursor-pointer ${
-//                   selectedDate === day
-//                     ? "bg-black text-white"
-//                     : "bg-white text-black"
-//                 }`}
-//               >
-//                 <div className="font-bold">{day}</div>
-//                 <div className="text-xs">
-//                   {record ? `${record.hours}h` : "0h"}
-//                 </div>
-//               </div>
-//             );
-//           })}
-//         </div>
-//       </div>
-
-//       {/* ================= DAY DETAILS ================= */}
-//       <div className="bg-blue-600 text-white p-8 rounded-2xl text-center">
-//         {selectedRecord ? (
-//           <>
-//             <h3 className="opacity-80">{selectedRecord.date}</h3>
-//             <h1 className="text-6xl font-bold mt-2">
-//               {selectedRecord.hours}h {selectedRecord.minutes}m
-//             </h1>
-//             <p className="mt-4">
-//               {selectedRecord.in_time || "--"} –{" "}
-//               {selectedRecord.out_time || "--"}
-//             </p>
-//           </>
-//         ) : (
-//           <h3>Select a day</h3>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default UserDashboard;
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import API from "../services/api";
 
@@ -190,14 +8,10 @@ const UserDashboard = () => {
   const [employee, setEmployee] = useState(null);
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [currentMonth, setCurrentMonth] = useState(12);
   const [currentYear, setCurrentYear] = useState(2025);
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // =========================
-  // FETCH DATA
-  // =========================
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -207,24 +21,23 @@ const UserDashboard = () => {
         const emp = empRes.data;
         setEmployee(emp);
 
-        if (!emp?.id) return;
+        if (!emp?.id) {
+          setAttendance([]);
+          return;
+        }
 
         const attRes = await API.get(`/attendance/employee/${emp.id}`);
-
-        // FIX DATE FORMAT
-        const normalized = attRes.data.map((r) => {
-          const d = new Date(r.date);
-
-          const formatted =
-            d.getFullYear() +
-            "-" +
-            String(d.getMonth() + 1).padStart(2, "0") +
-            "-" +
-            String(d.getDate()).padStart(2, "0");
+        const normalized = attRes.data.map((record) => {
+          const date = new Date(record.date);
 
           return {
-            ...r,
-            date: formatted,
+            ...record,
+            date:
+              date.getFullYear() +
+              "-" +
+              String(date.getMonth() + 1).padStart(2, "0") +
+              "-" +
+              String(date.getDate()).padStart(2, "0"),
           };
         });
 
@@ -239,14 +52,11 @@ const UserDashboard = () => {
     fetchData();
   }, [userId]);
 
-  // =========================
-  // CREATE DATE MAP
-  // =========================
   const attendanceMap = useMemo(() => {
     const map = {};
 
-    attendance.forEach((r) => {
-      map[r.date] = r;
+    attendance.forEach((record) => {
+      map[record.date] = record;
     });
 
     return map;
@@ -254,9 +64,6 @@ const UserDashboard = () => {
 
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
 
-  // =========================
-  // SELECTED DAY
-  // =========================
   const selectedKey = selectedDate
     ? `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(
         selectedDate
@@ -265,17 +72,14 @@ const UserDashboard = () => {
 
   const selectedRecord = selectedKey ? attendanceMap[selectedKey] : null;
 
-  // =========================
-  // MONTH NAVIGATION
-  // =========================
   const nextMonth = () => {
     setSelectedDate(null);
 
     if (currentMonth === 12) {
       setCurrentMonth(1);
-      setCurrentYear((y) => y + 1);
+      setCurrentYear((year) => year + 1);
     } else {
-      setCurrentMonth((m) => m + 1);
+      setCurrentMonth((month) => month + 1);
     }
   };
 
@@ -284,123 +88,102 @@ const UserDashboard = () => {
 
     if (currentMonth === 1) {
       setCurrentMonth(12);
-      setCurrentYear((y) => y - 1);
+      setCurrentYear((year) => year - 1);
     } else {
-      setCurrentMonth((m) => m - 1);
+      setCurrentMonth((month) => month - 1);
     }
   };
 
   if (loading) {
-    return <div className="p-8 text-gray-500">Loading dashboard…</div>;
+    return <div className="p-4 text-gray-500 sm:p-8">Loading dashboard...</div>;
   }
 
   return (
     <div className="space-y-6">
-
-      {/* ================= HEADER ================= */}
-
-      <div className="bg-blue-600 text-white p-6 rounded-xl">
-
-        <h1 className="text-2xl font-bold">
+      <div className="rounded-xl bg-blue-600 p-4 text-white sm:p-6">
+        <h1 className="text-xl font-bold sm:text-2xl">
           {employee?.name || "Employee"}
         </h1>
 
-        {/* MONTH NAVIGATION */}
-
-        <div className="flex justify-between items-center mt-2">
-
-          <button onClick={prevMonth} className="text-xl">
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <button
+            onClick={prevMonth}
+            className="rounded-md p-2 text-xl hover:bg-white/10"
+          >
             &lt;
           </button>
 
-          <span className="font-semibold">
+          <span className="text-center text-sm font-semibold sm:text-base">
             {new Date(currentYear, currentMonth - 1).toLocaleString("default", {
               month: "long",
             })}{" "}
             {currentYear}
           </span>
 
-          <button onClick={nextMonth} className="text-xl">
+          <button
+            onClick={nextMonth}
+            className="rounded-md p-2 text-xl hover:bg-white/10"
+          >
             &gt;
           </button>
-
         </div>
 
-        {/* ================= CALENDAR ================= */}
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          {Array.from({ length: daysInMonth }, (_, index) => index + 1).map(
+            (day) => {
+              const key = `${currentYear}-${String(currentMonth).padStart(
+                2,
+                "0"
+              )}-${String(day).padStart(2, "0")}`;
+              const record = attendanceMap[key];
+              const date = new Date(key);
 
-        <div className="flex gap-2 overflow-x-auto mt-4 pb-2">
+              let label = "";
 
-          {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
+              if (record) {
+                label = `${record.hours}h ${record.minutes}m`;
+              } else if (date.getDay() === 0) {
+                label = "Sunday";
+              } else if (key === "2025-12-25") {
+                label = "Holiday";
+              } else {
+                label = "Absent";
+              }
 
-            const key = `${currentYear}-${String(currentMonth).padStart(
-              2,
-              "0"
-            )}-${String(day).padStart(2, "0")}`;
-
-            const record = attendanceMap[key];
-
-            const dateObj = new Date(key);
-
-            let label = "";
-
-            if (record) {
-              label = `${record.hours}h ${record.minutes}m`;
-            } else if (dateObj.getDay() === 0) {
-              label = "Sunday";
-            } else if (key === "2025-12-25") {
-              label = "Holiday";
-            } else {
-              label = "Absent";
-            }
-
-            return (
-              <div
-                key={day}
-                onClick={() => setSelectedDate(day)}
-                className={`min-w-[70px] p-3 text-center rounded-lg cursor-pointer ${
-                  selectedDate === day
-                    ? "bg-black text-white"
-                    : "bg-white text-black"
-                }`}
-              >
-                <div className="font-bold">{day}</div>
-
-                <div className="text-xs mt-1">
-                  {label}
+              return (
+                <div
+                  key={day}
+                  onClick={() => setSelectedDate(day)}
+                  className={`cursor-pointer rounded-lg p-2 text-center sm:p-3 ${
+                    selectedDate === day
+                      ? "bg-black text-white"
+                      : "bg-white text-black"
+                  } min-w-[64px] sm:min-w-[70px]`}
+                >
+                  <div className="font-bold">{day}</div>
+                  <div className="mt-1 text-[11px] sm:text-xs">{label}</div>
                 </div>
-
-              </div>
-            );
-
-          })}
-
+              );
+            }
+          )}
         </div>
-
       </div>
 
-      {/* ================= DAY DETAILS ================= */}
-
-      <div className="bg-blue-600 text-white p-8 rounded-2xl text-center">
-
+      <div className="rounded-2xl bg-blue-600 p-5 text-center text-white sm:p-8">
         {selectedRecord ? (
           <>
             <h3 className="opacity-80">{selectedRecord.date}</h3>
-
-            <h1 className="text-6xl font-bold mt-2">
+            <h1 className="mt-2 text-4xl font-bold sm:text-6xl">
               {selectedRecord.hours}h {selectedRecord.minutes}m
             </h1>
-
             <p className="mt-4">
-              {selectedRecord.in_time || "--"} –{" "}
-              {selectedRecord.out_time || "--"}
+              {selectedRecord.in_time || "--"} - {selectedRecord.out_time || "--"}
             </p>
           </>
         ) : (
           <h3>Select a day</h3>
         )}
-
       </div>
-
     </div>
   );
 };

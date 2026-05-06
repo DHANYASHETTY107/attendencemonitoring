@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -6,20 +5,17 @@ import API from "../../services/api";
 
 const Day = () => {
   const { userId, date } = useParams();
+  const navigate = useNavigate();
 
-  // Use route `:date` if provided, otherwise default to today
-  const [selectedDate, setSelectedDate] = useState(
-    date || null
-  );
-
+  const [selectedDate, setSelectedDate] = useState(date || null);
   const [dayData, setDayData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDay = async (d) => {
+    const fetchDay = async (value) => {
       try {
-        const res = await API.get(`/attendance/user/${userId}/day/${d}`);
-        return res.data; // may be null
+        const res = await API.get(`/attendance/user/${userId}/day/${value}`);
+        return res.data;
       } catch (err) {
         console.error("Day attendance error:", err);
         return null;
@@ -27,31 +23,33 @@ const Day = () => {
     };
 
     const init = async () => {
-      // If date provided via route, use it
       if (date) {
         setSelectedDate(date);
-        await fetchDay(date);
+        const data = await fetchDay(date);
+        setDayData(data);
+        setLoading(false);
         return;
       }
 
-      // Otherwise fetch employee month list (dashboard) and pick the latest date
       try {
         const res = await API.get(`/attendance/employee/${userId}`);
+
         if (Array.isArray(res.data) && res.data.length > 0) {
           const last = res.data[res.data.length - 1];
-          const d = last.date; // backend returns DATE(date) as date (yyyy-mm-dd)
-          setSelectedDate(d);
+          const latestDate = last.date;
+          setSelectedDate(latestDate);
 
-          const dayRes = await fetchDay(d);
-          if (dayRes) {
-            setDayData(dayRes);
+          const data = await fetchDay(latestDate);
+
+          if (data) {
+            setDayData(data);
             setLoading(false);
             return;
           }
 
-          // Fallback: build dayData from the dashboard row if specific day endpoint returned null
           const workMinutes = (last.hours || 0) * 60 + (last.minutes || 0);
-          const idleMinutes = (last.idle_hours || 0) * 60 + (last.idle_minutes || 0);
+          const idleMinutes =
+            (last.idle_hours || 0) * 60 + (last.idle_minutes || 0);
 
           setDayData({
             date: last.date,
@@ -60,13 +58,9 @@ const Day = () => {
             work_minutes: workMinutes,
             idle_minutes: idleMinutes,
           });
-
-          setLoading(false);
-          return;
+        } else {
+          setDayData(null);
         }
-
-        // no attendance rows
-        setDayData(null);
       } catch (err) {
         console.error("Day init error:", err);
         setDayData(null);
@@ -76,31 +70,24 @@ const Day = () => {
     };
 
     init();
-  }, [userId, date]);
+  }, [date, userId]);
 
-  const navigate = useNavigate();
-
-  const formatISO = (d) => d.toISOString().split("T")[0];
+  const formatISO = (value) => value.toISOString().split("T")[0];
 
   const changeBy = async (days) => {
     if (!selectedDate) return;
-    const dt = new Date(selectedDate);
-    dt.setDate(dt.getDate() + days);
-    const newDate = formatISO(dt);
 
+    const nextDate = new Date(selectedDate);
+    nextDate.setDate(nextDate.getDate() + days);
+
+    const formattedDate = formatISO(nextDate);
     setLoading(true);
-    setSelectedDate(newDate);
-
-    // update URL so user can share/bookmark
-    navigate(`/user/${userId}/attendance/day/${newDate}`);
+    setSelectedDate(formattedDate);
+    navigate(`/user/${userId}/attendance/day/${formattedDate}`);
 
     try {
-      const res = await API.get(`/attendance/user/${userId}/day/${newDate}`);
-      if (res.data) {
-        setDayData(res.data);
-      } else {
-        setDayData(null);
-      }
+      const res = await API.get(`/attendance/user/${userId}/day/${formattedDate}`);
+      setDayData(res.data || null);
     } catch (err) {
       console.error("Day change fetch error:", err);
       setDayData(null);
@@ -109,49 +96,36 @@ const Day = () => {
     }
   };
 
-  if (loading) return <div className="p-6">Loading…</div>;
+  if (loading) return <div className="p-6">Loading...</div>;
 
-  // Determine which date to display
-  const displayedDate = selectedDate || dayData?.date || new Date().toISOString().split("T")[0];
-
-  // Determine status: Sunday, Holiday, Present or Absent
+  const displayedDate =
+    selectedDate || dayData?.date || new Date().toISOString().split("T")[0];
   const weekday = new Date(displayedDate).getDay();
+  const holidays = {
+    "2025-12-25": "Holiday",
+  };
 
-// Holiday list
-const holidays = {
-  "2025-12-25": "Holiday"
-};
+  let status = "Absent";
 
-let status = "Absent";
+  if (weekday === 0) {
+    status = "Sunday";
+  } else if (holidays[displayedDate]) {
+    status = holidays[displayedDate];
+  } else if (dayData && (dayData.work_minutes || 0) > 0) {
+    status = "Present";
+  }
 
-if (weekday === 0) {
-  status = "Sunday";
-} 
-else if (holidays[displayedDate]) {
-  status = holidays[displayedDate];
-} 
-else if (dayData && (dayData.work_minutes || 0) > 0) {
-  status = "Present";
-}
-  const formatMinutes = (m) =>
-    `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(
-      2,
-      "0"
-    )}`;
+  const formatMinutes = (minutes) =>
+    `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(
+      minutes % 60
+    ).padStart(2, "0")}`;
 
-  // Values to show when dayData is missing
-const workMinutes = status === "Present" ? dayData?.work_minutes || 0 : 0;
-const idleMinutes = status === "Present" ? dayData?.idle_minutes || 0 : 0;
-
-const inTime =
-  status === "Present" && dayData?.in_time
-    ? dayData.in_time.slice(0, 5)
-    : "--";
-
-const outTime =
-  status === "Present" && dayData?.out_time
-    ? dayData.out_time.slice(0, 5)
-    : "--";
+  const workMinutes = status === "Present" ? dayData?.work_minutes || 0 : 0;
+  const idleMinutes = status === "Present" ? dayData?.idle_minutes || 0 : 0;
+  const inTime =
+    status === "Present" && dayData?.in_time ? dayData.in_time.slice(0, 5) : "--";
+  const outTime =
+    status === "Present" && dayData?.out_time ? dayData.out_time.slice(0, 5) : "--";
 
   const badgeClasses =
     status === "Present"
@@ -163,45 +137,49 @@ const outTime =
       : "bg-red-100 text-red-700";
 
   return (
-    <div className="space-y-6 p-6">
-
-      {/* HEADER */}
-      <div className="flex justify-between items-center bg-white p-4 rounded shadow">
-        <div className="flex items-center gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 rounded bg-white p-4 shadow sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
-            className="p-2 rounded hover:bg-gray-100"
+            className="rounded p-2 hover:bg-gray-100"
             onClick={() => changeBy(-1)}
             aria-label="Previous day"
           >
             <ChevronLeft />
           </button>
 
-          <h2 className="font-bold">{new Date(displayedDate).toDateString()}</h2>
+          <h2 className="text-sm font-bold sm:text-base">
+            {new Date(displayedDate).toDateString()}
+          </h2>
 
           <button
-            className="p-2 rounded hover:bg-gray-100"
+            className="rounded p-2 hover:bg-gray-100"
             onClick={() => changeBy(1)}
             aria-label="Next day"
           >
             <ChevronRight />
           </button>
         </div>
-        <span className={`${badgeClasses} px-3 py-1 rounded text-xs`}>{status.toUpperCase()}</span>
+
+        <span className={`${badgeClasses} w-fit rounded px-3 py-1 text-xs`}>
+          {status.toUpperCase()}
+        </span>
       </div>
 
-      {/* SUMMARY */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-blue-600 text-white p-4 rounded">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded bg-blue-600 p-4 text-white">
           <p>Total Work</p>
           <h2 className="text-2xl">{formatMinutes(workMinutes)}</h2>
         </div>
 
-        <div className="bg-white p-4 rounded border">
+        <div className="rounded border bg-white p-4">
           <p>Time</p>
-          <h2 className="text-xl">{inTime} – {outTime}</h2>
+          <h2 className="text-xl">
+            {inTime} - {outTime}
+          </h2>
         </div>
 
-        <div className="bg-white p-4 rounded border">
+        <div className="rounded border bg-white p-4">
           <p>Idle</p>
           <h2 className="text-2xl">{formatMinutes(idleMinutes)}</h2>
         </div>

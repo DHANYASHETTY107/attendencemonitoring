@@ -42,9 +42,9 @@ const Sections = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="mx-auto max-w-6xl">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold">Sections</h2>
         <button
           className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
@@ -55,8 +55,9 @@ const Sections = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow border">
-        <table className="w-full border-collapse">
+      <div className="overflow-hidden rounded-lg border bg-white shadow">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] border-collapse">
           <thead>
             <tr className="bg-gray-100 text-left">
               <th className="px-6 py-3 w-20">ID</th>
@@ -84,13 +85,14 @@ const Sections = () => {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
       {/* Modal */}
       {show && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96 shadow-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
             <h3 className="text-lg font-semibold mb-4">Add Section</h3>
 
             <input

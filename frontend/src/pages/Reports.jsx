@@ -72,18 +72,18 @@ const Reports = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
 
       {/* Header */}
-      <div className="bg-blue-600 text-white p-4 rounded-md font-bold text-xl uppercase flex justify-between">
-        <span>
+      <div className="flex flex-col gap-3 rounded-md bg-blue-600 p-4 text-white sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-base font-bold uppercase sm:text-xl">
           ATTENDANCE REPORT ({month === 11 ? "November" : "December"})
         </span>
-        <span>{totalTime}</span>
+        <span className="text-sm font-semibold sm:text-base">{totalTime}</span>
       </div>
 
       {/* Month Switch */}
-      <div className="flex justify-center space-x-4">
+      <div className="flex flex-wrap justify-center gap-3">
         <button
           onClick={() => setMonth(11)}
           className={`px-4 py-1 rounded ${month === 11 ? "bg-blue-600 text-white" : "bg-gray-200"}`}
@@ -100,7 +100,7 @@ const Reports = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-center items-center space-x-6 font-semibold text-lg">
+      <div className="flex flex-wrap items-center justify-center gap-4 text-base font-semibold sm:text-lg">
 
         <button
           onClick={handlePrev}
@@ -124,17 +124,17 @@ const Reports = () => {
       </div>
 
       {/* Chart */}
-      <div className="bg-white p-8 rounded-2xl shadow-lg">
-        <div className="h-[450px] w-full">
+      <div className="rounded-2xl bg-white p-4 shadow-lg sm:p-8">
+        <div className="h-[280px] w-full sm:h-[360px] lg:h-[450px]">
 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={visibleData}>
 
               <CartesianGrid vertical={false} stroke="#f0f0f0" />
 
-              <XAxis dataKey="day" />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
 
-              <YAxis tickFormatter={(v) => `${v}h`} />
+              <YAxis tickFormatter={(v) => `${v}h`} tick={{ fontSize: 11 }} />
 
               <Tooltip />
 

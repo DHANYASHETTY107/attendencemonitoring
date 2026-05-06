@@ -1,111 +1,4 @@
 
-// import { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import API from "../services/api";
-
-// const Settings = () => {
-
-//   const navigate = useNavigate();
-
-//   const user = JSON.parse(localStorage.getItem("user"));
-
-//   const [password, setPassword] = useState("");
-//   const [confirmPassword, setConfirmPassword] = useState("");
-//   const [loading, setLoading] = useState(false);
-
-//   const changePassword = async () => {
-
-//     if (!password || !confirmPassword) {
-//       alert("Please fill all fields");
-//       return;
-//     }
-
-//     if (password !== confirmPassword) {
-//       alert("Passwords do not match");
-//       return;
-//     }
-
-//     try {
-
-//       setLoading(true);
-
-//       await API.post("/users/change-password", {
-//         userId: user.id,
-//         password: password
-//       });
-
-//       alert("Password updated successfully");
-
-//       // redirect back to dashboard
-//       navigate(`/user/${user.emp_code}/dashboard`);
-
-//     } catch (err) {
-
-//       console.error(err);
-//       alert("Failed to update password");
-
-//     } finally {
-//       setLoading(false);
-//     }
-
-//   };
-
-//   return (
-//     <div className="p-8 max-w-xl">
-
-//       <h1 className="text-2xl font-bold mb-6">
-//         Settings
-//       </h1>
-
-//       <div className="bg-white shadow rounded p-6 space-y-4">
-
-//         <h2 className="text-lg font-semibold">
-//           Change Password
-//         </h2>
-
-//         <div>
-//           <label className="block text-sm mb-1">
-//             New Password
-//           </label>
-
-//           <input
-//             type="password"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             className="border w-full p-2 rounded"
-//             placeholder="Enter new password"
-//           />
-//         </div>
-
-//         <div>
-//           <label className="block text-sm mb-1">
-//             Confirm Password
-//           </label>
-
-//           <input
-//             type="password"
-//             value={confirmPassword}
-//             onChange={(e) => setConfirmPassword(e.target.value)}
-//             className="border w-full p-2 rounded"
-//             placeholder="Confirm password"
-//           />
-//         </div>
-
-//         <button
-//           onClick={changePassword}
-//           disabled={loading}
-//           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-//         >
-//           {loading ? "Updating..." : "Change Password"}
-//         </button>
-
-//       </div>
-
-//     </div>
-//   );
-// };
-
-// export default Settings;
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
@@ -113,7 +6,7 @@ import API from "../services/api";
 const Settings = () => {
 
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -133,23 +26,33 @@ const Settings = () => {
       return;
     }
 
+    if (!user?.id) {
+      alert("Session expired. Please login again.");
+      navigate("/login", { replace: true });
+      return;
+    }
+
     try {
 
       setLoading(true);
 
       await API.post("/users/change-password", {
         userId: user.id,
-        password: password
+        password
       });
 
       alert("Password updated successfully");
+      setPassword("");
+      setConfirmPassword("");
 
       navigate(`/user/${user.emp_code}/dashboard`);
 
     } catch (err) {
 
       console.error(err);
-      alert("Failed to update password");
+      const errorMessage =
+        err?.response?.data?.message || err?.message || "Unknown error";
+      alert(`Failed to update password: ${errorMessage}`);
 
     } finally {
       setLoading(false);
@@ -158,11 +61,11 @@ const Settings = () => {
   };
 
   return (
-    <div className="p-8 max-w-xl">
+    <div className="mx-auto w-full max-w-xl px-1 sm:px-0">
 
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <h1 className="mb-6 text-2xl font-bold sm:text-3xl">Settings</h1>
 
-      <div className="bg-white shadow rounded p-6 space-y-4">
+      <div className="space-y-4 rounded-xl bg-white p-4 shadow sm:p-6">
 
         <h2 className="text-lg font-semibold">Change Password</h2>
 
@@ -176,7 +79,7 @@ const Settings = () => {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border w-full p-2 rounded pr-10"
+              className="w-full rounded border p-3 pr-10"
               placeholder="Enter new password"
             />
 
@@ -200,7 +103,7 @@ const Settings = () => {
               type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="border w-full p-2 rounded pr-10"
+              className="w-full rounded border p-3 pr-10"
               placeholder="Confirm password"
             />
 
@@ -217,7 +120,7 @@ const Settings = () => {
         <button
           onClick={changePassword}
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="w-full rounded bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 sm:w-auto"
         >
           {loading ? "Updating..." : "Change Password"}
         </button>

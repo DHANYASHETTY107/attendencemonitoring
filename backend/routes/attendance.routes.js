@@ -3,13 +3,17 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const XLSX = require("xlsx");
+const fs = require("fs");
+const path = require("path");
 const auth = require("../middleware/auth.middleware");
 const db = require("../config/db");
 
 // =======================
 // MULTER CONFIG
 // =======================
-const upload = multer({ dest: "uploads/" });
+const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), "uploads");
+fs.mkdirSync(uploadDir, { recursive: true });
+const upload = multer({ dest: uploadDir });
 
 /*
 =======================================================

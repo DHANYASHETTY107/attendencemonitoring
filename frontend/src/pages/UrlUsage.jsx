@@ -34,19 +34,19 @@ const UrlUsage = () => {
   ];
 
   return (
-    <div className="p-4 space-y-6 text-gray-700">
+    <div className="space-y-6 p-1 text-gray-700 sm:p-4">
       
       {/* 1. Header Section */}
-      <div className="bg-blue-600 p-4 rounded-lg shadow flex justify-between items-center text-white">
-        <h1 className="text-xl font-bold">{displayName}</h1>
-        <div className="flex gap-3">
-          <div className="bg-white text-blue-800 p-2 rounded-lg text-xs shadow">
+      <div className="flex flex-col gap-4 rounded-lg bg-blue-600 p-4 text-white shadow xl:flex-row xl:items-center xl:justify-between">
+        <h1 className="break-words text-xl font-bold">{displayName}</h1>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg bg-white p-2 text-xs text-blue-800 shadow">
             <p className="opacity-70">Total Usage Time</p>
             <p className="font-black text-lg">01h 33min</p>
           </div>
-          <div className="bg-white text-blue-800 p-2 rounded-lg text-xs shadow border-l-4 border-blue-500">
+          <div className="rounded-lg border-l-4 border-blue-500 bg-white p-2 text-xs text-blue-800 shadow">
             <p className="opacity-70">Top App</p>
-            <p className="font-black text-lg">Adobe After Effects 2021</p>
+            <p className="text-base font-black sm:text-lg">Adobe After Effects 2021</p>
           </div>
         </div>
       </div>
@@ -57,9 +57,9 @@ const UrlUsage = () => {
         <div className="w-full lg:w-1/3 space-y-4">
           
           {/* Filter Pills */}
-          <div className="flex border border-blue-200 rounded-full p-1 bg-white inline-flex w-full">
+          <div className="inline-flex w-full flex-wrap gap-1 rounded-2xl border border-blue-200 bg-white p-1">
             {['Day', 'Week', 'Month', 'Date Range'].map((t) => (
-              <button key={t} className={`flex-1 py-1 text-xs rounded-full ${t === 'Day' ? 'bg-blue-600 text-white' : 'text-blue-600'}`}>{t}</button>
+              <button key={t} className={`min-w-[calc(50%-0.125rem)] flex-1 rounded-full px-3 py-2 text-xs ${t === 'Day' ? 'bg-blue-600 text-white' : 'text-blue-600'}`}>{t}</button>
             ))}
           </div>
 
@@ -69,10 +69,10 @@ const UrlUsage = () => {
           </div>
 
           {/* Pie Chart */}
-          <div className="h-64 w-full">
+          <div className="h-56 w-full sm:h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={usageData} dataKey="value" innerRadius={0} outerRadius={100} paddingAngle={2}>
+                <Pie data={usageData} dataKey="value" innerRadius={0} outerRadius={90} paddingAngle={2}>
                   {usageData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
                   ))}
@@ -95,7 +95,8 @@ const UrlUsage = () => {
         {/* 3. Right Column: Usage Table */}
         <div className="flex-1 space-y-4">
           <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[420px] border-collapse text-left">
               <thead className="bg-blue-600 text-white">
                 <tr>
                   <th className="p-3 font-bold">App Name</th>
@@ -116,7 +117,8 @@ const UrlUsage = () => {
                   <td className="p-3 text-right text-sm text-blue-700 border-l border-white">01h 33min</td>
                 </tr>
               </tfoot>
-            </table>
+              </table>
+            </div>
           </div>
 
           {/* Pagination Placeholder */}

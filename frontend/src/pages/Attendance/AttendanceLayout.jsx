@@ -4,18 +4,16 @@ const AttendanceLayout = () => {
   const { userId } = useParams();
 
   return (
-    <div>
-      {/* Header */}
-      <div className="bg-blue-600 text-white px-6 py-4 rounded text-xl font-semibold">
-        Attendance – User #{userId}
+    <div className="space-y-4">
+      <div className="rounded bg-blue-600 px-4 py-4 text-lg font-semibold text-white sm:px-6 sm:text-xl">
+        Attendance - User #{userId}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-6 mt-4 border-b pb-2">
+      <div className="flex flex-wrap gap-4 border-b pb-2 sm:gap-6">
         <NavLink
           to="day"
           className={({ isActive }) =>
-            isActive ? "text-blue-600 font-semibold" : "text-gray-600"
+            isActive ? "font-semibold text-blue-600" : "text-gray-600"
           }
         >
           Day
@@ -24,7 +22,7 @@ const AttendanceLayout = () => {
         <NavLink
           to="month"
           className={({ isActive }) =>
-            isActive ? "text-blue-600 font-semibold" : "text-gray-600"
+            isActive ? "font-semibold text-blue-600" : "text-gray-600"
           }
         >
           Month
@@ -33,14 +31,13 @@ const AttendanceLayout = () => {
         <NavLink
           to="calendar"
           className={({ isActive }) =>
-            isActive ? "text-blue-600 font-semibold" : "text-gray-600"
+            isActive ? "font-semibold text-blue-600" : "text-gray-600"
           }
         >
           Calendar
         </NavLink>
       </div>
 
-      {/* Page Content */}
       <div className="mt-6">
         <Outlet />
       </div>

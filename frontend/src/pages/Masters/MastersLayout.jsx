@@ -7,7 +7,7 @@ const MastersLayout = () => {
   return (
     <div>
       {/* Tabs */}
-      <div className="flex gap-6 border-b mb-6">
+      <div className="mb-6 flex flex-wrap gap-4 border-b sm:gap-6">
         <NavLink
           to="departments"
           end

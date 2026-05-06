@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
 import Login from "./pages/Login";
@@ -27,7 +27,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
   <Routes>
     {/* PUBLIC ROUTE */}
     <Route path="/login" element={<Login />} />
@@ -81,7 +81,7 @@ function App() {
     {/* FALLBACK */}
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
-</BrowserRouter>
+</HashRouter>
   );
 }
 

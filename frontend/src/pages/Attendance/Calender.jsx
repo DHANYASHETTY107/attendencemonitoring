@@ -121,13 +121,13 @@ const Calendar = () => {
 
   return (
 
-    <div className="p-4 bg-white rounded border border-gray-200 shadow-sm">
+    <div className="rounded border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
 
       {/* HEADER */}
 
-      <div className="flex justify-between items-center border-b pb-4 mb-4">
+      <div className="mb-4 flex items-center justify-between border-b pb-4">
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
 
           <button
             onClick={() => setMonth(11)}
@@ -136,7 +136,7 @@ const Calendar = () => {
             <ChevronLeft size={18} />
           </button>
 
-          <h2 className="text-xl font-bold">{monthName}</h2>
+          <h2 className="text-lg font-bold sm:text-xl">{monthName}</h2>
 
           <button
             onClick={() => setMonth(12)}
@@ -151,7 +151,7 @@ const Calendar = () => {
 
       {/* WEEK HEADER */}
 
-      <div className="grid grid-cols-7 gap-1 text-center font-semibold text-gray-500 mb-2">
+      <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-gray-500 sm:text-sm">
 
         <div>Sun</div>
         <div>Mon</div>
@@ -165,7 +165,7 @@ const Calendar = () => {
 
       {/* CALENDAR GRID */}
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
 
         {days.map((item, index) =>
 
@@ -173,7 +173,7 @@ const Calendar = () => {
 
             <div
               key={index}
-              className={`h-20 border p-2 flex flex-col justify-between
+              className={`flex h-16 flex-col justify-between border p-1.5 sm:h-20 sm:p-2
                 ${item.status === "Present" ? "bg-green-50 border-green-300" : ""}
                 ${item.status === "Absent" ? "bg-red-50 border-red-200" : ""}
                 ${item.status === "Sunday" ? "bg-gray-100 border-gray-300" : ""}
@@ -181,9 +181,9 @@ const Calendar = () => {
               `}
             >
 
-              <span className="font-bold">{item.day}</span>
+              <span className="text-sm font-bold sm:text-base">{item.day}</span>
 
-              <span className="text-[10px] text-gray-600">
+              <span className="text-[9px] text-gray-600 sm:text-[10px]">
 
                {item.status === "Holiday"
   ? (item.date.includes("-11-01")
@@ -207,7 +207,7 @@ const Calendar = () => {
 
       {/* LEGEND */}
 
-      <div className="mt-6 flex flex-wrap gap-4 text-sm pt-4 border-t">
+      <div className="mt-6 flex flex-wrap gap-4 border-t pt-4 text-xs sm:text-sm">
 
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 bg-green-200 border border-green-400"></div>

@@ -1,0 +1,69 @@
+{
+  "name": "attendance-monitoring-desktop",
+  "version": "1.0.0",
+  "description": "Desktop build for the Attendance Management System.",
+  "main": "electron/main.js",
+  "author": "Attendance Monitoring",
+  "license": "ISC",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && npm install --prefix frontend && npm install --prefix backend",
+    "start": "npm run build:frontend && electron .",
+    "electron:dev": "npm run build:frontend && electron .",
+    "build:frontend": "npm run build --prefix frontend",
+    "build:win": "npm run build:frontend && electron-builder --win nsis",
+    "dist": "npm run build:win"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.0.2",
+    "mysql2": "^3.17.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.attendance.monitoring",
+    "productName": "Attendance Monitoring",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "backend/**/*",
+      "frontend/build/**/*",
+      "package.json",
+      "!backend/node_modules/**/*",
+      "!frontend/node_modules/**/*",
+      "!frontend/src/**/*",
+      "!frontend/public/**/*",
+      "!**/*.log"
+    ],
+    "extraResources": [
+      {
+        "from": "attendence.sql",
+        "to": "database/attendence.sql"
+      }
+    ],
+    "asarUnpack": [
+      "backend/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "signAndEditExecutable": false,
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
